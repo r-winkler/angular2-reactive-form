@@ -1,39 +1,39 @@
 <div class="container">
     <h3>Employee Form</h3>
-    <form #form="ngForm" (submit)="submitForm(form)" novalidate>
-        <div class="form-group" [class.has-error]="firstName.invalid && firstName.touched">
+    <form (submit)="submitForm()" novalidate [formGroup]="employeeForm">
+        <div class="form-group" [class.has-error]="employeeForm.get('firstName').invalid && employeeForm.get('firstName').touched">
             <label for="firstNameId" class="control-label">First Name</label>
-            <input #firstName="ngModel" id="firstNameId" pattern="...+" type="text" class="form-control" required placeholder="firstName" name="firstName" [(ngModel)]="model.firstName">
+            <input id="firstNameId" type="text" class="form-control" placeholder="firstName" formControlName="firstName">
         </div>
-        <div *ngIf="firstName.invalid && firstName.touched" class="alert alert-danger">
+        <div *ngIf="employeeForm.get('firstName').invalid && employeeForm.get('firstName').touched" class="alert alert-danger">
             Firstname is required, and must be at least 3 characters.
         </div>
         <div class="form-group">
-            <label for="lastNameId">First Name</label>
-            <input #lastName id="lastNameId" type="text" class="form-control" required placeholder="lastName" name="lastName" [ngModel]="model.lastName" (ngModelChange)="lastNameToUpperCase($event)">
+            <label for="lastNameId">Last Name</label>
+            <input id="lastNameId" type="text" class="form-control" placeholder="lastName" formControlName="lastName">
         </div>
         
         <div class="checkbox">
             <label>
-                <input type="checkbox" name="is-full-time" [(ngModel)]="model.isFullTime"> Full Time Employee
+                <input type="checkbox" formControlName="isFullTime"> Full Time Employee
             </label>
         </div>
         
         <label>Payment Type</label>
         <div class="radio">
             <label>
-                <input type="radio" name="pay-type" value="w2" checked [(ngModel)]="model.paymentType"> W2
+                <input type="radio" value="w2" checked formControlName="paymentType"> W2
             </label>
         </div>
         <div class="radio">
             <label>
-                <input type="radio" name="pay-type" value="1099" [(ngModel)]="model.paymentType"> 1099
+                <input type="radio" value="1099" formControlName="paymentType"> 1099
             </label>
         </div>
         
         <div class="form-group" [class.has-error]="hasPrimaryLanguageError">
             <label class="control-label" for="languageId">Primary Language</label>
-            <select id="languageId" #primaryLanguage class="form-control" name="primaryLanguage" (blur)="validatePrimaryLanguage(primaryLanguage.value)" (change)="validatePrimaryLanguage(primaryLanguage.value)" [(ngModel)]="model.primaryLanguage">
+            <select id="languageId" class="form-control" formControlName="primaryLanguage">
                 <option value="default">Select a language...</option>
                 <option *ngFor="let lang of languages">
                     {{lang}}
@@ -41,14 +41,8 @@
             </select>
         </div>
         
-        <button class="btn btn-primary" type="submit" [disabled]="form.invalid">OK</button>
+        <button class="btn btn-primary" type="submit" [disabled]="employeeForm.invalid">OK</button>
     </form>
 </div>
 <br>
-Model: {{model | json}}
-<br>
-Angular: {{form.value | json}}
-<br>
-Properties of firstName: {{firstName.valid}}, {{firstName.dirty}}, {{firstName.touched}}
-<br>
-Classes of lastName: {{lastName.className}}
+Properties of firstName: {{employeeForm.get('firstName').valid}}, {{employeeForm.get('firstName').dirty}}, {{employeeForm.get('firstName').touched}}

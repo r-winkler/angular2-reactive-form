@@ -1,17 +1,55 @@
-import {Component} from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {Employee} from './employee.model';
 import {FormPoster} from './employee.service';
-import {NgForm} from '@angular/forms';
+import {FormGroup, FormControl, FormBuilder, Validators, AbstractControl} from '@angular/forms';
+
+/* Custom Validator */
+function primaryLanguageValidator(c: AbstractControl): {[key: string]:boolean} | null {
+    if(c.value === 'default') {
+        return { 'primaryLanguage': true}
+    };
+    return null;
+};
 
 @Component({
   selector: 'employee',
   styleUrls: ['./employee.component.css'],
   templateUrl: './employee.component.html'
 })
-export class EmployeeComponent {
+export class EmployeeComponent implements OnInit {
+    employeeForm: FormGroup;   
+    model : Employee;
+        
     languages = [];
-    model = new Employee('René', 'Winkler', true, 'w2', 'default');
     
+    constructor(private formPoster: FormPoster, private fb: FormBuilder) {
+        this.formPoster.getLanguages()
+            .subscribe(
+                data => this.languages = data.languages,
+                err => console.log('get error: ', err)
+            );   
+    }
+    
+    ngOnInit(): void {
+        
+        /* this.employeeForm = new FormGroup({
+            firstName: new FormControl('René'),
+            lastName: new FormControl('Winkler'),
+            isFullTime: new FormControl(true),
+            paymentType: new FormControl('w2'),
+            primaryLanguage: new FormControl('default')
+        }); */
+        
+        
+        this.employeeForm = this.fb.group({
+            firstName: ['René', [Validators.required, Validators.minLength(3)]],
+            lastName: ['Winkler', Validators.required],
+            isFullTime: true,
+            paymentType: 'w2',
+            primaryLanguage: ['default', primaryLanguageValidator]         
+        });
+        
+    }  
     
     lastNameToUpperCase(value: string) {
         if(value.length > 0) 
@@ -20,35 +58,16 @@ export class EmployeeComponent {
             this.model.lastName = value;
     }
     
-    hasPrimaryLanguageError = false;
     
-    constructor(private formPoster: FormPoster) {
-        this.formPoster.getLanguages()
-            .subscribe(
-                data => this.languages = data.languages,
-                err => console.log('get error: ', err)
-            );
-    
-    }
-    
-    submitForm(form: NgForm) {
-        console.log(this.model);
-        console.log(form.value);
-        this.validatePrimaryLanguage(this.model.primaryLanguage);
-        if (this.hasPrimaryLanguageError)
-            return;
+    submitForm() {
+        console.log('Saved: ' + JSON.stringify(this.employeeForm.value));
+        console.log(this.employeeForm);
+        
         this.formPoster.postEmployeeForm(this.model)
             .subscribe(
                 data => console.log('success:', data),
                 err => console.log('error:', err)
-            );
+            ); 
     }
     
-    validatePrimaryLanguage(value) {
-        if (value === 'default') {
-            this.hasPrimaryLanguageError = true;
-        }
-        else
-            this.hasPrimaryLanguageError = false;
-    }
 }
